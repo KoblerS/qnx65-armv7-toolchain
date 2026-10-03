@@ -17,6 +17,8 @@ jobs:
       pull-requests: write # autolabeler writes PR labels
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
       - uses: KoblerS/release-drafter@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
