@@ -1,0 +1,22 @@
+# Draft (or update) the next GitHub release on every push to main.
+# Uses KoblerS/release-drafter; config lives in .github/release-drafter.yml.
+name: Release Drafter
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  update_release_draft:
+    permissions:
+      contents: write # create/update the draft release
+      pull-requests: write # autolabeler writes PR labels
+    runs-on: ubuntu-latest
+    steps:
+      - uses: KoblerS/release-drafter@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
