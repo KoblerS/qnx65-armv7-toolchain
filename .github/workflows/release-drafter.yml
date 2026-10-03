@@ -5,21 +5,18 @@ name: Release Drafter
 on:
   push:
     branches: [main]
-  pull_request:
-    types: [opened, reopened, synchronize]
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   update_release_draft:
     permissions:
-      contents: write        # create/update the draft release
-      pull-requests: write   # autolabeler writes PR labels
+      contents: write # create/update the draft release
+      pull-requests: write # autolabeler writes PR labels
     runs-on: ubuntu-latest
     steps:
-      - uses: KoblerS/release-drafter@master
-        with:
-          config-name: release-drafter.yml
+      - uses: KoblerS/release-drafter@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
