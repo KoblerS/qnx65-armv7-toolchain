@@ -1,0 +1,65 @@
+# Release Drafter configuration — https://github.com/KoblerS/release-drafter
+# Drives the draft release that .github/workflows/release-drafter.yml maintains
+# on every push to main. Categories are filled from merged-PR labels.
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+
+categories:
+  - title: "🧱 Toolchain / GCC"
+    labels: ["gcc", "binutils", "toolchain"]
+  - title: "🐹 Go port"
+    labels: ["go"]
+  - title: "🦀 Rust port"
+    labels: ["rust"]
+  - title: "✨ Features"
+    labels: ["feature", "enhancement"]
+  - title: "🐛 Fixes"
+    labels: ["fix", "bug"]
+  - title: "📝 Documentation"
+    labels: ["docs", "documentation"]
+  - title: "🧰 Maintenance"
+    labels: ["chore", "ci", "refactor", "dependencies"]
+
+change-template: "- $TITLE (#$NUMBER) @$AUTHOR"
+change-title-escapes: '\<*_&'
+
+version-resolver:
+  major:
+    labels: ["major", "breaking"]
+  minor:
+    labels: ["minor", "feature", "enhancement"]
+  patch:
+    labels: ["patch", "fix", "bug", "chore", "docs", "dependencies"]
+  default: patch
+
+autolabeler:
+  - label: "docs"
+    files: ["**/*.md"]
+  - label: "ci"
+    files: [".github/**"]
+  - label: "gcc"
+    files: ["gcc/**", "binutils/**"]
+  - label: "go"
+    files: ["go/**"]
+  - label: "rust"
+    files: ["rust/**"]
+  - label: "fix"
+    title: ["/fix/i", "/bug/i"]
+
+template: |
+  ## What's changed
+
+  $CHANGES
+
+  ---
+
+  ### Published image
+  This release builds and pushes the QNX 6.5 / armv7 cross-toolchain image:
+
+  ```
+  ghcr.io/koblers/qnx65-armv7-toolchain:4.9
+  ```
+
+  GCC 4.9.4 · `/opt/qnx650` · `arm-unknown-nto-qnx6.5.0eabi-gcc` · `qcc` shim.
+
+  **Full changelog:** $PREVIOUS_TAG...v$RESOLVED_VERSION

@@ -1,0 +1,70 @@
+# Build the QNX 6.5 / armv7 cross-toolchain image and push it to GHCR when a
+# release is published (the Release Drafter draft from release-drafter.yml,
+# published by hand). Also runnable manually via workflow_dispatch.
+#
+# Only the :4.9 variant is published (GCC 4.9.4, --target base-env,
+# --build-arg BASE=base-4.9) — the image mib2-vc-maps consumes.
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag to push (default: 4.9)"
+        required: false
+        default: "4.9"
+
+permissions:
+  contents: read
+  packages: write        # push the image to GHCR
+
+env:
+  IMAGE: ghcr.io/koblers/qnx65-armv7-toolchain
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve image tag
+        id: ctx
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="4.9"   # the variant mib2-vc-maps consumes
+          fi
+          echo "tag=${TAG:-4.9}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Mirrors `./host-scripts/qnx-run.sh build 4.9`:
+      #   --target base-env --build-arg BASE=base-4.9
+      - name: Build & push :4.9
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          target: base-env
+          build-args: |
+            BASE=base-4.9
+          push: true
+          provenance: false
+          tags: ${{ env.IMAGE }}:${{ steps.ctx.outputs.tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Summary
+        run: |
+          echo "Pushed \`${{ env.IMAGE }}:${{ steps.ctx.outputs.tag }}\`" >> "$GITHUB_STEP_SUMMARY"
