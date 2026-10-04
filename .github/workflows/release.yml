@@ -62,8 +62,6 @@ jobs:
           push: true
           provenance: false
           tags: ${{ env.IMAGE }}:${{ steps.ctx.outputs.tag }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       - name: Summary
         run: |
